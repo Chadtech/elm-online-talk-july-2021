@@ -1,5 +1,5 @@
 port module Ports.Incoming exposing
-    ( Error
+    ( Error(..)
     , Listener
     , batch
     , errorToString
@@ -26,7 +26,7 @@ type Listener msg
 
 type Error
     = NotFound String
-    | BodyDecodeFail Decode.Error
+    | BodyDecodeFail String Decode.Error
     | StructureDecodeFail Decode.Error
 
 
@@ -55,8 +55,8 @@ errorToString error =
         NotFound str ->
             "Message came in that we werent listening for : " ++ str
 
-        BodyDecodeFail subError ->
-            "Body decode error : " ++ Decode.errorToString subError
+        BodyDecodeFail portName subError ->
+            "Body decode error for " ++ portName ++ " : " ++ Decode.errorToString subError
 
         StructureDecodeFail subError ->
             "Structure decode error : " ++ Decode.errorToString subError
@@ -136,7 +136,7 @@ decode json listener =
                     case Dict.get type_ batchListeners of
                         Just decoder ->
                             Decode.decodeValue decoder body
-                                |> Result.mapError BodyDecodeFail
+                                |> Result.mapError (BodyDecodeFail type_)
 
                         Nothing ->
                             Err (NotFound type_)
@@ -144,7 +144,7 @@ decode json listener =
                 Single listenerType_ decoder ->
                     if listenerType_ == type_ then
                         Decode.decodeValue decoder body
-                            |> Result.mapError BodyDecodeFail
+                            |> Result.mapError (BodyDecodeFail type_)
 
                     else
                         Err (NotFound type_)

@@ -1,9 +1,11 @@
 module Main exposing (main)
 
+import Analytics
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode
 import Layout exposing (Document)
 import Page.Home as Home
 import Ports.Incoming
@@ -23,7 +25,7 @@ main : Program Decode.Value Model Msg
 main =
     { init = init
     , view = Layout.toBrowserDocument << view
-    , update = update
+    , update = superUpdate
     , subscriptions = subscriptions
     , onUrlRequest = UrlRequested
     , onUrlChange = RouteChanged << Route.fromUrl
@@ -82,10 +84,40 @@ getSession model =
             Home.getSession subModel
 
 
+pageName : Model -> String
+pageName model =
+    case model of
+        PageNotFound _ ->
+            "not found"
+
+        Home _ ->
+            "home"
+
+
 
 --------------------------------------------------------------------------------
 -- UPDATE --
 --------------------------------------------------------------------------------
+
+
+superUpdate : Msg -> Model -> ( Model, Cmd Msg )
+superUpdate msg model =
+    let
+        analyticsEvent : Analytics.Event
+        analyticsEvent =
+            track msg
+                |> Analytics.withProp "pageName" (Encode.string <| pageName model)
+
+        ( newModel, cmd ) =
+            update msg model
+    in
+    ( newModel
+    , Cmd.batch
+        [ cmd
+        , analyticsEvent
+            |> Analytics.toCmd
+        ]
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -95,7 +127,7 @@ update msg model =
             model
                 |> CmdUtil.withNoCmd
 
-        UrlRequested urlRequest ->
+        UrlRequested _ ->
             model
                 |> CmdUtil.withNoCmd
 
@@ -129,6 +161,38 @@ handleRouteChange maybeRoute model =
                     ( Home <| Home.init session
                     , Cmd.none
                     )
+
+
+track : Msg -> Analytics.Event
+track msg =
+    case msg of
+        MsgDecodeFailed error ->
+            case error of
+                Ports.Incoming.NotFound _ ->
+                    Analytics.none
+
+                Ports.Incoming.BodyDecodeFail portName _ ->
+                    Analytics.name
+                        "Port Msg decode fail"
+                        |> Analytics.withProp "portName" (Encode.string portName)
+
+                Ports.Incoming.StructureDecodeFail _ ->
+                    Analytics.name "Port Msg structure decode fail"
+
+        UrlRequested _ ->
+            Analytics.none
+
+        RouteChanged maybeRoute ->
+            Analytics.name "route changed"
+                |> Analytics.withProp "route"
+                    (maybeRoute
+                        |> Maybe.map Route.toLabel
+                        |> Maybe.withDefault "unrecognized route"
+                        |> Encode.string
+                    )
+
+        HomeMsg subMsg ->
+            Home.track subMsg
 
 
 

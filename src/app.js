@@ -11,9 +11,15 @@ function square(n) {
 	toElm("square computed", n * n);
 }
 
+function analyticsEvent
+
 var actions = {
-	consoleLog: console.log,
-	square: square
+	analytics_event: function(payload) {
+        var eventName = payload.eventName;
+        var props = payload.props;
+
+        console.log("TRACK", eventName, props);
+    }
 }
 
 function jsMsgHandler(msg) {

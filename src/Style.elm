@@ -1,6 +1,5 @@
 module Style exposing
-    ( bigFont
-    , black
+    ( black
     , globals
     , lightGray
     , red
@@ -15,26 +14,30 @@ import Html.Styled exposing (Html)
 
 globals : Html msg
 globals =
-    [ Css.Global.p
-        [ fontFamilies [ "Arial" ]
-        , color black
+    [ Css.Global.everything
+        [ margin zero
+        , padding zero
         ]
+    , Css.Global.p
+        [ color black ]
     , Css.Global.input
-        [ fontFamilies [ "Arial" ]
-        , color black
-        , fontSize (em 2)
-        , backgroundColor white1
-        , border3 (px 2) solid lightGray
+        [ color black
         , outline none
-        , width (px 500)
+        , width (rem 32)
+        , padding <| rem 0.5
+        ]
+    , Css.Global.button
+        [ padding <| rem 0.5
+        , minWidth <| rem 4
+        ]
+    , Css.Global.body
+        [ padding <| rem 2
+        , displayFlex
+        , flexDirection column
+        , fontFamilies [ "Arial" ]
         ]
     ]
         |> global
-
-
-bigFont : Style
-bigFont =
-    fontSize (em 4)
 
 
 

@@ -1,6 +1,7 @@
 module Route exposing
     ( Route(..)
     , fromUrl
+    , toLabel
     )
 
 import Url exposing (Url)
@@ -26,6 +27,13 @@ type Route
 fromUrl : Url -> Maybe Route
 fromUrl =
     P.parse parser
+
+
+toLabel : Route -> String
+toLabel route =
+    case route of
+        Landing ->
+            "Landing"
 
 
 
