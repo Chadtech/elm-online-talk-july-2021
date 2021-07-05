@@ -7,11 +7,11 @@ function toElm(type, body) {
 	});
 }
 
-function square(n) {
-	toElm("square computed", n * n);
-}
 
-function analyticsEvent
+
+
+
+
 
 var actions = {
 	analytics_event: function(payload) {

@@ -106,8 +106,8 @@ superUpdate msg model =
         analyticsEvent : Analytics.Event
         analyticsEvent =
             track msg
-                |> Analytics.withProp "pageName" (Encode.string <| pageName model)
 
+        --|> Analytics.withProp "pageName" (Encode.string <| pageName model)
         ( newModel, cmd ) =
             update msg model
     in

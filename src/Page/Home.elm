@@ -30,8 +30,8 @@ notes =
     """
     Goals:
     - Speedrun through an OK implementation of doing analytics
-    - Show you a "better" implementation of analytics
-    - Generalize the "better" implementation so you can use it for
+    - Interate on the OK implementation
+    - Generalize the techniques we saw, so you can use do it for
       all kinds of different things
     """
 
@@ -178,7 +178,7 @@ track msg =
         OpenClicked ->
             Analytics.name "open clicked"
 
-        FieldChanged field ->
+        FieldChanged _ ->
             Analytics.none
 
 
